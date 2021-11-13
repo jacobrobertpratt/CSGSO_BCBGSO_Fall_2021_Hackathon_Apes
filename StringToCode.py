@@ -4,38 +4,23 @@ import subprocess
 import os
 import time
 import cv2
+import charImageGetter
 
 root = Tk()
 root.geometry("400x400")
 
+Lang = "Java" #"Python" "Java" "Lisp"
+
 combined = "i = 0\nfor i in range(10):\n\ti+=1\n\tprint('hi')"
 
-def runPython(program):
+def run(program):
     tempFile = open("MainMethod.py", 'w')
     tempFile.write(program)
     tempFile.close()
-    startPython()
+    start()
 
-def runJava(program):
-    tempFile = open("Method.java", 'w')
-    tempFile.write(program)
-    tempFile.close()
-    compileJava()
-    time.sleep(.5)
-    startJava()
-
-def startPython():
+def start():
     cmd = 'python ' + "MainMethod.py"
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    suboutput = process.stdout.read()
-    print(suboutput.decode("utf-8"))
-
-def compileJava():
-    cmd = 'javac ' + "Method.java"
-    process = subprocess.Popen(cmd, shell=True)
-
-def startJava():
-    cmd = 'java ' + "Method"
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     suboutput = process.stdout.read()
     print(suboutput.decode("utf-8"))
@@ -61,11 +46,24 @@ def startFeed():
             # cv2.imshow("Resized image", resized)
             cv2.waitKey(1)
             cv2.imwrite("filename.jpg", resized)
-
-
+			cImages = charImageGetter("filename.jpg")
+            model = tf.keras.models.load_model(Lang+'1000model.h5')
+            code = ""
+            character_curated = []
+			LANGUAGE = Lang
+            if LANGUAGE == "Python":
+        		character_curated = [ord(c) for c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabdefghnqrt():<=>[]+-*/'+ "'" ]
+    		elif LANGUAGE == "Java":
+        		character_curated = [ord(c) for c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabdefghnqrt();<=>[]+-*{}/!'+ "'" ]
+    		elif LANGUAGE == "Lisp":
+        		character_curated = [ord(c) for c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabdefghnqrt()<=>[]+-*/!'  + "'"]
+			for i in cImages:
+				result = np.argmax(model.predict(X_test[idx:idx+1]))
+                code += chr(character_curated[result])
             i+=1
 
     # Generate string from image here.
+    run(combined)
 
 def click():
     startFeed()
