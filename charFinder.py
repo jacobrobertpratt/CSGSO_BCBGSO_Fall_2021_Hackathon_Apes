@@ -42,12 +42,17 @@ def charImageGetter(file_name):
         cv2.rectangle(imageCv, (x, y), (x + w, y + h), (255, 0, 255), 2)
         croppedImages.append(smoothed[y:y + h, x: x + w])
         i += 1
+    j = 0
+    for character in croppedImages:
+        croppedImages[j] = cv2.resize(croppedImages[j], (28, 28), interpolation=cv2.INTER_CUBIC)
+        print(croppedImages[j].shape)
+        j += 1
 
     return croppedImages
 
 myList = charImageGetter('officalTestImage.jpg')
 
-cv2.imshow('ligma', myList[17])
+cv2.imshow('ligma', myList[15])
 plt.show()
 
 cv2.waitKey()
