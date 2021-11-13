@@ -1,3 +1,5 @@
+from collections import Counter
+
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -42,17 +44,79 @@ def charImageGetter(file_name):
         cv2.rectangle(imageCv, (x, y), (x + w, y + h), (255, 0, 255), 2)
         croppedImages.append(smoothed[y:y + h, x: x + w])
         i += 1
+
+    unsorted = []
+    imgsortedy = []
+    for count, p in enumerate(croppedImages):
+        tempArr = []
+        tempArr.append(xArr[count])
+        tempArr.append(xArr[count] + wArr[count])
+        tempArr.append(yArr[count])
+        tempArr.append(yArr[count]+hArr[count])
+        tempArr.append(p)
+        unsorted.append(tempArr)
+
+    q = 0
+    while len(unsorted) > 0:
+        image = unsorted.pop()
+        fits = False
+        for i in imgsortedy:
+            if i[0] > image[0] and i[1] > image[1]:
+                i[2].append(image)
+                fits = True
+                break
+            elif i[0] < image[0] and i[1] > image[1]:
+                i[0] = image[0]
+                i[2].append(image)
+                fits = True
+                break
+            elif i[0] > image[0] and i[1] < image[1]:
+                i[1] = image[1]
+                i[2].append(image)
+                fits = True
+                break
+        if fits == False:
+            imgsortedy.append([image[0], image[1], [image]])
+
+    truimgsortedy = []
+
+
+
+    while len(imgsortedy) > 0:
+        tempMin = imgsortedy[0][0]
+        tempIndex = 0
+        for count,i in enumerate(imgsortedy):
+            if i[0]<tempMin:
+                tempMin = i[0]
+                tempIndex = count
+        truimgsortedy.append(imgsortedy.pop(tempIndex))
+
+
+    finalArray = []
+
+    for i in truimgsortedy:
+        tempList = i[2]
+        while len(tempList) > 0:
+            count = 0
+            tempMin = tempList[0][2]
+            tempLoc = 0
+            for z in tempList:
+                if z[2] < tempMin:
+                    tempMin = z[2]
+                    tempLoc = count
+                count += 1
+            finalArray.append(tempList.pop(tempLoc)[4])
+
     j = 0
     for character in croppedImages:
-        croppedImages[j] = cv2.resize(croppedImages[j], (28, 28), interpolation=cv2.INTER_CUBIC)
-        print(croppedImages[j].shape)
+        croppedImages[j] = 1-(cv2.resize(finalArray[j], (28, 28), interpolation=cv2.INTER_CUBIC)/255.)
         j += 1
 
     return croppedImages
 
 myList = charImageGetter('officalTestImage.jpg')
 
-cv2.imshow('ligma', myList[15])
+
 plt.show()
 
-cv2.waitKey()
+cv2.waitKey(0)
