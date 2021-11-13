@@ -1,29 +1,58 @@
+import PySimpleGUI as sg
+from tkinter import *
 import subprocess
 import os
 import time
+import cv2
 
-testString = 'int lame = 0; int zoo = 10; for (int i = 0; i < zoo; i++) { lame++; System.out.println("ape" + lame); }'
-beginning = "public class MainMethod { public static void main(String[] args) { "
-end = "}}"
-combined = beginning + testString + end
+root = Tk()
+root.geometry("400x400")
+
+combined = "i = 0\nfor i in range(10):\n\ti+=1\n\tprint('hi')"
 
 def run(program):
-    tempFile = open("MainMethod.java", 'w')
+    tempFile = open("MainMethod.py", 'w')
     tempFile.write(program)
     tempFile.close()
-    compile()
-    time.sleep(.5)
     start()
 
-def compile():
-    command = 'javac ' + "MainMethod.java"
-    process = subprocess.Popen(command, shell=True)
-
 def start():
-    cmd = 'java ' + "MainMethod"
+    cmd = 'python ' + "MainMethod.py"
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     suboutput = process.stdout.read()
     print(suboutput.decode("utf-8"))
 
-os.remove('MainMethod.class')
-run(combined)
+def startFeed():
+    cam = cv2.VideoCapture(0)  # 0 -> index of camera
+
+    i = 0
+    while i<2:
+        s, img = cam.read()
+        if s:  # frame captured without any errors
+            # cv2.namedWindow("cam-test")
+            # cv2.imshow("cam-test", img)
+            cv2.waitKey(1)
+            cv2.imwrite("filename.jpg", img)
+
+            scale_percent = 200
+            width = int(img.shape[1] * 200 / 100)
+            height = int(img.shape[0] * 200 / 100)
+            dim = (width, height)
+
+            resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+            # cv2.imshow("Resized image", resized)
+            cv2.waitKey(1)
+            cv2.imwrite("filename.jpg", resized)
+
+
+            i+=1
+
+    # Generate string from image here.
+    run(combined)
+
+def click():
+    startFeed()
+
+button = Button(root, text="Run Code From Camera", command=click, width=20, height=10, bg="black", fg="white", borderwidth=5)
+button.pack()
+root.mainloop()
