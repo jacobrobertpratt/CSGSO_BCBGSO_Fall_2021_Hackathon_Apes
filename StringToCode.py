@@ -13,14 +13,32 @@ Lang = "Java" #"Python" "Java" "Lisp"
 
 combined = "i = 0\nfor i in range(10):\n\ti+=1\n\tprint('hi')"
 
-def run(program):
+def runPython(program):
     tempFile = open("MainMethod.py", 'w')
     tempFile.write(program)
     tempFile.close()
-    start()
+    startPython()
 
-def start():
+def startPython():
     cmd = 'python ' + "MainMethod.py"
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    suboutput = process.stdout.read()
+    print(suboutput.decode("utf-8"))
+	
+def runJava(program):
+    tempFile = open("Method.java", 'w')
+    tempFile.write(program)
+    tempFile.close()
+    compileJava()
+    time.sleep(.5)
+    startJava()
+	
+def compileJava():
+    cmd = 'javac ' + "Method.java"
+    process = subprocess.Popen(cmd, shell=True)
+	
+def startJava():
+    cmd = 'java ' + "Method"
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     suboutput = process.stdout.read()
     print(suboutput.decode("utf-8"))
@@ -63,7 +81,6 @@ def startFeed():
             i+=1
 
     # Generate string from image here.
-    run(combined)
 
 def click():
     startFeed()
